@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brahim Cashier</title>
+<style>
+*{box-sizing:border-box;font-family:Tahoma}
+body{margin:0;background:#f0f2f5;padding:8px}
+.header{background:#0d47a1;color:#fff;padding:14px;text-align:center;border-radius:12px;font-weight:bold}
+.card{background:#fff;border-radius:12px;padding:12px;margin:8px 0}
+.btn{width:100%;padding:14px;border:0;border-radius:10px;font-size:17px;font-weight:bold;color:#fff;cursor:pointer;margin:6px 0;background:#2e7d32}
+input,select{width:100%;padding:12px;margin:6px 0;border:1px solid #bbb;border-radius:8px}
+table{width:100%;border-collapse:collapse}
+th{background:#0d47a1;color:#fff;padding:8px}
+td{border-bottom:1px solid #ddd;padding:7px;text-align:center}
+</style>
+</head>
+<body>
+<div class="header">BRAHIM CASHIER - تطبيق مجاني</div>
+<div class="card">
+<select id="sellProduct"></select>
+<input id="sellQty" type="number" value="1" placeholder="الكمية">
+<input id="sellClient" placeholder="الزبون">
+<button class="btn" onclick="doSell()">بيع + طباعة</button>
+<div>مجموع: <b id="todayTotal">0</b> | ربح: <b id="todayProfit">0</b></div>
+</div>
+<div class="card">
+<b>سلعة جديدة</b>
+<input id="pName" placeholder="الاسم">
+<input id="pBarcode" placeholder="باركود">
+<input id="pBuy" type="number" placeholder="شراء">
+<input id="pSell" type="number" placeholder="بيع">
+<input id="pQty" type="number" placeholder="الكمية">
+<button class="btn" style="background:#1565c0" onclick="addProduct()">حفظ السلعة</button>
+<table id="stockTable"></table>
+</div>
+<div id="printArea" style="display:none"></div>
+<script>
+let products=JSON.parse(localStorage.getItem('brahim_products')||'[]');
+let sales=JSON.parse(localStorage.getItem('brahim_sales')||'[]');
+function addProduct(){
+let n=document.getElementById('pName').value.trim();
+let bc=document.getElementById('pBarcode').value.trim();
+let b=parseFloat(document.getElementById('pBuy').value);
+let s=parseFloat(document.getElementById('pSell').value);
+let q=parseInt(document.getElementById('pQty').value);
+if(!n||isNaN(b)||isNaN(s)||isNaN(q))return alert('عمر البيانات');
+products.push({id:Date.now(),name:n,barcode:bc,buy:b,sell:s,qty:q});
+localStorage.setItem('brahim_products',JSON.stringify(products));
+alert('تم');renderAll();
+}
+function renderAll(){
+let sel=document.getElementById('sellProduct');sel.innerHTML='';
+products.forEach(p=>{
+let o=document.createElement('option');o.value=p.id;
+o.textContent=p.name+' - '+p.qty+' - '+p.sell+' DH';sel.appendChild(o);
+});
+let tot=sales.reduce((a,s)=>a+s.total,0);
+let prof=sales.reduce((a,s)=>a+s.profit,0);
+document.getElementById('todayTotal').textContent=tot+' DH';
+document.getElementById('todayProfit').textContent=prof+' DH';
+let tb=document.getElementById('stockTable');
+tb.innerHTML='<tr><th>سلعة</th><th>ستوك</th><th>X</th></tr>';
+products.forEach((p,i)=>{
+tb.innerHTML+=`<tr><td>${p.name}</td><td>${p.qty}</td><td><button onclick="products.splice(${i},1);localStorage.setItem('brahim_products',JSON.stringify(products));renderAll()">X</button></td></tr>`;
+});
+}
+function doSell(){
+let pid=parseInt(document.getElementById('sellProduct').value);
+let qty=parseInt(document.getElementById('sellQty').value);
+let cl=document.getElementById('sellClient').value||'زبون';
+let prod=products.find(p=>p.id===pid);
+if(!prod)return alert('اختار السلعة');
+if(prod.qty<qty)return alert('ستوك ناقص');
+let profit=(prod.sell-prod.buy)*qty;
+let total=prod.sell*qty;
+prod.qty-=qty;
+let sale={date:new Date().toLocaleString('ar-MA'),name:prod.name,qty,profit,total,client:cl};
+sales.unshift(sale);
+localStorage.setItem('brahim_products',JSON.stringify(products));
+localStorage.setItem('brahim_sales',JSON.stringify(sales));
+renderAll();
+let a=document.getElementById('printArea');
+a.style.display='block';
+a.innerHTML=`<div style=width:58mm;font-size:12px><center><b>BRAHIM</b><br>${sale.date}<br>---</center>Client:${cl}<br>Prod:${sale.name}<br>Qte:${qty}<br>TOTAL:${total} DH<br><center>شكرا</center></div>`;
+window.print();
+setTimeout(()=>a.style.display='none',400);
+}
+renderAll();
+</script>
+</body>
+</html>
