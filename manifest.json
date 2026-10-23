@@ -1,0 +1,19 @@
+{
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "name": "Brahim Cashier Pro",
+  "short_name": "Brahim POS",
+  "start_url": "/brahim-cashier/",
+  "scope": "/brahim-cashier/",
+  "theme_color": "#000000",
+  "id": "brahim-pos-app",
+  "description": "Professional POS cashier like Loyverse - Works offline",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4290/4290857.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
